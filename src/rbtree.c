@@ -65,8 +65,6 @@ void right_rotate(rbtree *t, node_t *node) {
 node_t *rbtree_insert(rbtree *t, const key_t key) {
   node_t *endNode = t->root;
   node_t *parentNode = t->nil;
-  node_t *newNode = (node_t *)calloc(1, sizeof(node_t));
-  newNode->key = key;
 
   while(endNode != t->nil) {
     parentNode = endNode;
@@ -76,6 +74,9 @@ node_t *rbtree_insert(rbtree *t, const key_t key) {
       endNode = endNode->right;
     }
   }
+
+  node_t *newNode = (node_t *)calloc(1, sizeof(node_t));
+  newNode->key = key;
   newNode->parent = parentNode;
 
   if(parentNode == t->nil) {
@@ -283,22 +284,32 @@ int rbtree_to_array(const rbtree *t, key_t *arr, const size_t n) {
   node_t *tempNode = t->nil;
   int index = 0;
 
-  while(curNode != t->nil) {
-    if(curNode->left != t->nil) {
-      prevNode = curNode->left;
-      while(prevNode->right != t->nil) {
-        prevNode = prevNode->right;
-      }
-      prevNode->right = curNode;
-      tempNode = curNode;
-      curNode = curNode->left;
-      tempNode->left = t->nil;
-    } else {
-      arr[index++] = curNode->key;
-      if(index >= n) {
+while (curNode != t->nil) {
+    if (curNode->left == t->nil) {
+      if (index < n) {
+        arr[index++] = curNode->key;
+      } else {
         break;
       }
       curNode = curNode->right;
+    } else {
+      prevNode = curNode->left;
+      while (prevNode->right != t->nil && prevNode->right != curNode) {
+        prevNode = prevNode->right;
+      }
+
+      if (prevNode->right == t->nil) {
+        prevNode->right = curNode;
+        curNode = curNode->left;
+      } else {
+        prevNode->right = t->nil;
+        if (index < n) {
+          arr[index++] = curNode->key;
+        } else {
+          break;
+        }
+        curNode = curNode->right;
+      }
     }
   }
   return 0;
